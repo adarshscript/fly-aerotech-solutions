@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Certificate of Training — Fly Aerotech Solutions</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+        background: #eef4fc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 24px;
+      }
+      .certificate {
+        position: relative;
+        width: 1123px;
+        height: 794px;
+        background: #ffffff;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 24px 60px rgba(8, 23, 48, 0.18);
+      }
+      .certificate::before {
+        content: "";
+        position: absolute;
+        inset: 18px;
+        border: 2px solid #0fc98b;
+        border-radius: 8px;
+        pointer-events: none;
+      }
+      .certificate::after {
+        content: "";
+        position: absolute;
+        inset: 26px;
+        border: 1px solid #0b2145;
+        border-radius: 6px;
+        pointer-events: none;
+      }
+      .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 44px 56px 0;
+      }
+      .org {
+        text-align: right;
+      }
+      .org-name {
+        font-size: 20px;
+        font-weight: 700;
+        color: #081730;
+        letter-spacing: 0.02em;
+      }
+      .org-sub {
+        font-size: 10px;
+        font-weight: 600;
+        color: #0fc98b;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        margin-top: 2px;
+      }
+      .badge {
+        width: 64px;
+        height: 64px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #0fc98b, #0aa86f);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #050e1f;
+        font-size: 30px;
+        font-weight: 800;
+      }
+      .body {
+        padding: 56px 76px 0;
+        text-align: center;
+      }
+      .doc-title {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.32em;
+        text-transform: uppercase;
+        color: #0fc98b;
+      }
+      .cert-title {
+        font-size: 42px;
+        font-weight: 800;
+        color: #081730;
+        margin-top: 10px;
+        letter-spacing: 0.01em;
+      }
+      .intro {
+        font-size: 15px;
+        color: #0b2145;
+        margin-top: 26px;
+      }
+      .student-name {
+        font-size: 38px;
+        font-weight: 800;
+        color: #081730;
+        margin-top: 10px;
+        border-bottom: 2px solid #0fc98b;
+        display: inline-block;
+        padding: 0 20px 6px;
+      }
+      .detail {
+        font-size: 15px;
+        color: #0b2145;
+        margin-top: 24px;
+        line-height: 1.8;
+      }
+      .highlight {
+        font-weight: 700;
+        color: #081730;
+      }
+      .ref {
+        margin-top: 18px;
+        font-family: "Consolas", "Courier New", monospace;
+        font-size: 12px;
+        color: #0aa86f;
+      }
+      .footer {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 44px;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        padding: 0 76px;
+      }
+      .sign {
+        text-align: center;
+        font-size: 12px;
+        color: #0b2145;
+      }
+      .sign-line {
+        width: 180px;
+        border-top: 1px solid #0b2145;
+        margin: 0 auto 8px;
+      }
+      .sign-name {
+        font-weight: 700;
+        color: #081730;
+      }
+      .msme {
+        position: absolute;
+        bottom: 30px;
+        left: 0;
+        right: 0;
+        text-align: center;
+        font-size: 9px;
+        color: #163a75;
+        letter-spacing: 0.08em;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="certificate">
+      <div class="header">
+        <div class="badge">FA</div>
+        <div class="org">
+          <div class="org-name">Fly Aerotech Solutions</div>
+          <div class="org-sub">Software &middot; Training &middot; Internship</div>
+        </div>
+      </div>
+
+      <div class="body">
+        <div class="doc-title">Certificate of Training</div>
+        <h1 class="cert-title">Certificate of Completion</h1>
+        <p class="intro">This is to certify that</p>
+        <div class="student-name">{{student_name}}</div>
+        <p class="detail">
+          has successfully completed the training program in
+          <br />
+          <span class="highlight">{{course}}</span>
+          <br />
+          Duration: <span class="highlight">{{duration}}</span>
+          &nbsp;&nbsp;|&nbsp;&nbsp; {{start_date}} &rarr; {{end_date}}
+        </p>
+        <div class="ref">Ref. No: {{reference_no}} &nbsp;&middot;&nbsp; Issued on: {{issue_date}}</div>
+      </div>
+
+      <div class="footer">
+        <div class="sign">
+          <div class="sign-line"></div>
+          <div class="sign-name">Authorised Signatory</div>
+          <div>Fly Aerotech Solutions</div>
+        </div>
+        <div class="sign">
+          <div class="sign-line"></div>
+          <div class="sign-name">Head of Training</div>
+          <div>Fly Aerotech Solutions</div>
+        </div>
+      </div>
+
+      <div class="msme">
+        MSME Regd. UDYAM-GJ-24-0181066 &nbsp;&middot;&nbsp; Vadodara, Gujarat &nbsp;&middot;&nbsp; flyaerotechsolutions.com
+      </div>
+    </div>
+  </body>
+</html>

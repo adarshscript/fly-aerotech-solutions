@@ -1,0 +1,12 @@
+# Fly Aerotech Solutions — Python backend (future phases)
+# Intended for analytics, reporting, AI features and automation scripts.
+# These dependencies are reserved for future use and should be installed
+# inside a dedicated virtual environment, not the Next.js runtime.
+
+pymongo>=4.8
+pandas>=2.2
+numpy>=1.26
+reportlab>=4.2
+matplotlib>=3.9
+scikit-learn>=1.5
+python-dotenv>=1.0
