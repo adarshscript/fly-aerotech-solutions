@@ -98,6 +98,7 @@ export interface CompanyInfo {
   city: string;
   addressLine: string;
   msme: string;
+  udyam: string;
   establishedYear: number;
   workingHours?: string;
   social: {
@@ -110,6 +111,13 @@ export interface CompanyInfo {
   };
   copyright: string;
   footerAbout: string;
+  footerQuickLinks: { label: string; href: string }[];
+  seo: {
+    title: string;
+    description: string;
+    keywords: string[];
+  };
+  mapEmbedUrl?: string;
 }
 
 export interface SettingsInfo {

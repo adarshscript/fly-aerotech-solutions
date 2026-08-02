@@ -227,6 +227,7 @@ export async function getCompany(): Promise<CompanyInfo | null> {
       city: address?.city ?? "",
       addressLine: [address?.line1, address?.line2].filter(Boolean).join(", "),
       msme: doc.msmeNumber,
+      udyam: doc.udyamNumber,
       establishedYear: doc.establishedYear,
       workingHours: doc.workingHours,
       social: {
@@ -239,6 +240,13 @@ export async function getCompany(): Promise<CompanyInfo | null> {
       },
       copyright: doc.copyright,
       footerAbout: doc.footer?.about ?? "",
+      footerQuickLinks: doc.footer?.quickLinks ?? [],
+      seo: {
+        title: doc.seo?.title ?? "",
+        description: doc.seo?.description ?? "",
+        keywords: doc.seo?.keywords ?? [],
+      },
+      mapEmbedUrl: doc.mapEmbedUrl ?? undefined,
     };
   } catch {
     return null;

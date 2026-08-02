@@ -35,12 +35,12 @@ const NAV_GROUPS: { title: string; items: NavItem[] }[] = [
   {
     title: "Content",
     items: [
-      { label: "Students", href: "/admin/students", icon: Users, soon: true },
-      { label: "Courses", href: "/admin/courses", icon: GraduationCap, soon: true },
+      { label: "Students", href: "/admin/students", icon: Users },
+      { label: "Courses", href: "/admin/courses", icon: GraduationCap },
       { label: "Training", href: "/admin/training", icon: Rocket, soon: true },
       { label: "Internships", href: "/admin/internships", icon: Briefcase, soon: true },
       { label: "Services", href: "/admin/services", icon: Wrench, soon: true },
-      { label: "Certificates", href: "/admin/certificates", icon: Award, soon: true },
+      { label: "Certificates", href: "/admin/certificates", icon: Award },
       { label: "Blog", href: "/admin/blog", icon: FileText, soon: true },
       { label: "Gallery", href: "/admin/gallery", icon: GalleryHorizontalEnd, soon: true },
     ],
@@ -50,7 +50,7 @@ const NAV_GROUPS: { title: string; items: NavItem[] }[] = [
     items: [
       { label: "Enquiries", href: "/admin/enquiries", icon: MessageSquare, soon: true },
       { label: "Notifications", href: "/admin/notifications", icon: Bell, soon: true },
-      { label: "Settings", href: "/admin/settings", icon: Settings, soon: true },
+      { label: "Settings", href: "/admin/settings", icon: Settings },
     ],
   },
 ];

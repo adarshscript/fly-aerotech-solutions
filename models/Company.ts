@@ -30,6 +30,12 @@ export interface ICompanyFooter {
   quickLinks: ICompanyFooterLink[];
 }
 
+export interface ICompanySeo {
+  title: string;
+  description: string;
+  keywords: string[];
+}
+
 export interface ICompany {
   name: string;
   tagline: string;
@@ -40,11 +46,13 @@ export interface ICompany {
   website: string;
   address: ICompanyAddress;
   msmeNumber: string;
+  udyamNumber: string;
   establishedYear: number;
   workingHours?: string;
   socialLinks: ICompanySocialLinks;
   copyright: string;
   footer: ICompanyFooter;
+  seo: ICompanySeo;
   mapEmbedUrl?: string;
   createdAt?: Date;
   updatedAt?: Date;
@@ -95,6 +103,15 @@ const CompanyFooterSchema = new Schema<ICompanyFooter>(
   { _id: false }
 );
 
+const CompanySeoSchema = new Schema<ICompanySeo>(
+  {
+    title: { type: String, default: "" },
+    description: { type: String, default: "" },
+    keywords: { type: [String], default: [] },
+  },
+  { _id: false }
+);
+
 const CompanySchema = new Schema<ICompany>(
   {
     name: {
@@ -125,6 +142,7 @@ const CompanySchema = new Schema<ICompany>(
     website: { type: String, trim: true },
     address: { type: CompanyAddressSchema, required: true },
     msmeNumber: { type: String, required: true, trim: true },
+    udyamNumber: { type: String, required: true, trim: true },
     establishedYear: {
       type: Number,
       required: true,
@@ -135,6 +153,7 @@ const CompanySchema = new Schema<ICompany>(
     socialLinks: { type: CompanySocialLinksSchema, default: () => ({}) },
     copyright: { type: String, required: true, trim: true },
     footer: { type: CompanyFooterSchema, required: true },
+    seo: { type: CompanySeoSchema, default: () => ({ title: "", description: "", keywords: [] }) },
     mapEmbedUrl: { type: String, trim: true },
   },
   { timestamps: true }

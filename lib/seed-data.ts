@@ -258,6 +258,7 @@ export const seedCompany = {
     country: "India",
   },
   msmeNumber: "UDYAM-GJ-00-0000000",
+  udyamNumber: "UDYAM-GJ-24-0181066",
   establishedYear: 2021,
   workingHours: "Mon – Sat: 10:00 AM – 7:00 PM IST",
   socialLinks: {
@@ -273,6 +274,20 @@ export const seedCompany = {
     about:
       "Fly Aerotech Solutions provides software development, training and internships from Vadodara, Gujarat.",
     quickLinks: [],
+  },
+  seo: {
+    title: "Fly Aerotech Solutions — Software, Training & Internships",
+    description:
+      "Fly Aerotech Solutions offers software development, web development, training and internships from Vadodara, Gujarat.",
+    keywords: [
+      "software development",
+      "web development",
+      "training",
+      "internship",
+      "Vadodara",
+      "Gujarat",
+      "technology consulting",
+    ],
   },
 };
 

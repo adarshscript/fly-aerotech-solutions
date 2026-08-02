@@ -6,10 +6,20 @@ import {
   logoutAdmin,
   updateAdminProfile,
 } from "@/services/auth/auth.service";
+import {
+  updateCompanySettings,
+  type CompanySettingsInput,
+} from "@/services/company.service";
 
 export interface AdminFormState {
   ok?: boolean;
   error?: string;
+}
+
+export interface CompanyFormState {
+  ok?: boolean;
+  error?: string;
+  message?: string;
 }
 
 export async function logoutAction(): Promise<void> {
@@ -50,4 +60,26 @@ export async function changePasswordAction(
   }
 
   return { ok: true };
+}
+
+export async function updateCompanyAction(
+  _prev: CompanyFormState,
+  formData: FormData
+): Promise<CompanyFormState> {
+  const raw = String(formData.get("payload") ?? "");
+  if (!raw) return { ok: false, error: "No data received." };
+
+  let input: CompanySettingsInput;
+  try {
+    input = JSON.parse(raw) as CompanySettingsInput;
+  } catch {
+    return { ok: false, error: "Invalid form payload." };
+  }
+
+  const result = await updateCompanySettings(input);
+  if (!result.ok) return { ok: false, error: result.error };
+
+  revalidatePath("/");
+  revalidatePath("/admin/settings");
+  return { ok: true, message: "Company settings saved. Changes are live across the website." };
 }

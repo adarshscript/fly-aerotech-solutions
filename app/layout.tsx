@@ -1,7 +1,9 @@
+import { cache } from "react";
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import { getCompany } from "@/lib/content";
 import "@/styles/globals.css";
 
 const geistSans = Geist({
@@ -14,53 +16,61 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: {
-    default: "Fly Aerotech Solutions",
-    template: "%s | Fly Aerotech Solutions",
-  },
-  description:
-    "Fly Aerotech Solutions — software development, web development, training and internships based in Vadodara, Gujarat.",
-  applicationName: "Fly Aerotech Solutions",
-  keywords: [
-    "software development",
-    "web development",
-    "training",
-    "internship",
-    "Vadodara",
-    "Gujarat",
-    "technology consulting",
-  ],
-  icons: {
-    icon: "/favicon.png",
-    apple: "/favicon.png",
-  },
-  metadataBase: new URL("https://flyaerotechsolutions.com"),
-  openGraph: {
-    type: "website",
-    locale: "en_IN",
-    url: "https://flyaerotechsolutions.com",
-    siteName: "Fly Aerotech Solutions",
-    title: "Fly Aerotech Solutions",
-    description:
-      "Software development, web development, training and internships based in Vadodara, Gujarat.",
-  },
-};
+const getCompanyCached = cache(getCompany);
+
+export async function generateMetadata(): Promise<Metadata> {
+  const company = await getCompanyCached();
+  const name = company?.name ?? "Fly Aerotech Solutions";
+  const title = company?.seo?.title || name;
+  const description =
+    company?.seo?.description ||
+    "Software development, web development, training and internships based in Vadodara, Gujarat.";
+  const favicon = company?.favicon || "/favicon.png";
+
+  return {
+    title: {
+      default: title,
+      template: `%s | ${name}`,
+    },
+    description,
+    applicationName: name,
+    keywords: company?.seo?.keywords?.length
+      ? company.seo.keywords
+      : ["software development", "web development", "training", "internship", "Vadodara", "Gujarat"],
+    icons: {
+      icon: favicon,
+      apple: favicon,
+    },
+    metadataBase: new URL(company?.website || "https://flyaerotechsolutions.com"),
+    openGraph: {
+      type: "website",
+      locale: "en_IN",
+      url: company?.website || "https://flyaerotechsolutions.com",
+      siteName: name,
+      title,
+      description,
+    },
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: "#081730",
   colorScheme: "light",
 };
 
-export default function RootLayout({
+export const dynamic = "force-dynamic";
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const company = await getCompanyCached();
+
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body className="flex min-h-screen flex-col bg-white text-slate-700 antialiased">
-        <Navbar />
+        <Navbar company={company} />
         <main className="flex-1">{children}</main>
         <Footer />
       </body>

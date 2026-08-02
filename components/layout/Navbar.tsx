@@ -8,8 +8,13 @@ import Logo from "@/components/layout/Logo";
 import Container from "@/components/ui/Container";
 import { navLinks, utilityLinks } from "@/lib/data";
 import { cn } from "@/lib/utils";
+import type { CompanyInfo } from "@/types";
 
-export default function Navbar() {
+interface NavbarProps {
+  company?: CompanyInfo | null;
+}
+
+export default function Navbar({ company }: NavbarProps) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -33,7 +38,7 @@ export default function Navbar() {
       )}
     >
       <Container className="flex h-16 items-center justify-between gap-4 sm:h-[4.5rem]">
-        <Logo />
+        <Logo company={company} />
 
         <nav className="hidden items-center gap-1 lg:flex" aria-label="Primary">
           {navLinks.map((item) => (

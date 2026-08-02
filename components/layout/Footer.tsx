@@ -3,7 +3,7 @@ import { Mail, MapPin, ShieldCheck } from "lucide-react";
 import Logo from "@/components/layout/Logo";
 import Container from "@/components/ui/Container";
 import { services } from "@/lib/data";
-import { site } from "@/lib/site";
+import { getCompany } from "@/lib/content";
 
 function GithubIcon({ className }: { className?: string }) {
   return (
@@ -37,7 +37,7 @@ function InstagramIcon({ className }: { className?: string }) {
   );
 }
 
-const quickLinks = [
+const fallbackQuickLinks = [
   { label: "About Us", href: "/about" },
   { label: "Training", href: "/training" },
   { label: "Internship", href: "/internship" },
@@ -46,16 +46,34 @@ const quickLinks = [
   { label: "Contact", href: "/contact" },
 ];
 
-const socialLinks = [
-  { label: "GitHub", href: site.social.github, Icon: GithubIcon },
-  { label: "LinkedIn", href: site.social.linkedin, Icon: LinkedinIcon },
-  { label: "Twitter", href: site.social.twitter, Icon: TwitterIcon },
-  { label: "Instagram", href: site.social.instagram, Icon: InstagramIcon },
+const SOCIAL_ICONS: { key: keyof CompanySocial; Icon: React.ComponentType<{ className?: string }> }[] = [
+  { key: "github", Icon: GithubIcon },
+  { key: "linkedin", Icon: LinkedinIcon },
+  { key: "twitter", Icon: TwitterIcon },
+  { key: "instagram", Icon: InstagramIcon },
 ];
 
+type CompanySocial = {
+  github?: string;
+  linkedin?: string;
+  twitter?: string;
+  instagram?: string;
+  facebook?: string;
+  youtube?: string;
+};
 
-export default function Footer() {
+export default async function Footer() {
+  const company = await getCompany();
   const year = new Date().getFullYear();
+
+  const name = company?.name ?? "Fly Aerotech Solutions";
+  const contactLocation = [company?.city, company?.addressLine].filter(Boolean).join(", ");
+  const socials = SOCIAL_ICONS.filter(
+    ({ key }) => company?.social?.[key] && company.social[key] !== "#"
+  );
+  const quickLinks = company?.footerQuickLinks?.length
+    ? company.footerQuickLinks
+    : fallbackQuickLinks;
 
   return (
     <footer className="relative overflow-hidden bg-navy-950 text-navy-100">
@@ -66,16 +84,16 @@ export default function Footer() {
       />
       <Container className="relative grid gap-10 py-16 sm:grid-cols-2 lg:grid-cols-4">
         <div>
-          <Logo variant="light" />
+          <Logo variant="light" company={company} />
           <p className="mt-5 max-w-xs text-sm leading-relaxed text-navy-200">
-            {site.tagline} Software, training and internship services based in {site.city}, {site.location}.
+            {company?.footerAbout ?? `${company?.tagline ?? ""} Software, training and internship services based in ${company?.city ?? "Vadodara"}.`}
           </p>
           <div className="mt-6 flex items-center gap-3">
-            {socialLinks.map(({ label, href, Icon }) => (
+            {socials.map(({ key, Icon }) => (
               <a
-                key={label}
-                href={href}
-                aria-label={label}
+                key={key}
+                href={company?.social?.[key]}
+                aria-label={key}
                 className="flex size-9 items-center justify-center rounded-full border border-white/10 text-navy-100 transition-all hover:border-tech-500 hover:bg-tech-500/10 hover:text-tech-400"
               >
                 <Icon className="size-4" aria-hidden />
@@ -116,23 +134,27 @@ export default function Footer() {
         <div>
           <h3 className="text-sm font-semibold tracking-wider text-white uppercase">Contact</h3>
           <ul className="mt-5 space-y-4 text-sm text-navy-200">
-            <li className="flex items-start gap-3">
-              <MapPin className="mt-0.5 size-4 shrink-0 text-tech-400" aria-hidden />
-              <span>{site.location}</span>
-            </li>
+            {contactLocation ? (
+              <li className="flex items-start gap-3">
+                <MapPin className="mt-0.5 size-4 shrink-0 text-tech-400" aria-hidden />
+                <span>{contactLocation}</span>
+              </li>
+            ) : null}
             <li className="flex items-center gap-3">
               <Mail className="size-4 shrink-0 text-tech-400" aria-hidden />
-              <a href={`mailto:${site.email}`} className="transition-colors hover:text-tech-400">
-                {site.email}
+              <a href={`mailto:${company?.email ?? ""}`} className="transition-colors hover:text-tech-400">
+                {company?.email ?? ""}
               </a>
             </li>
             <li className="flex items-center gap-3">
               <ShieldCheck className="size-4 shrink-0 text-tech-400" aria-hidden />
-              <span className="font-mono text-xs">MSME: {site.msme}</span>
+              <span className="font-mono text-xs">
+                {company?.udyam ? `UDYAM: ${company.udyam}` : `MSME: ${company?.msme ?? ""}`}
+              </span>
             </li>
           </ul>
           <a
-            href={`mailto:${site.email}?subject=Project%20Enquiry%20—%20${site.name}`}
+            href={`mailto:${company?.email ?? ""}?subject=Project%20Enquiry%20—%20${name}`}
             className="mt-6 inline-flex items-center justify-center rounded-full bg-tech-500 px-5 py-2.5 text-sm font-semibold text-navy-950 transition-all hover:bg-tech-400"
           >
             Start a Project
@@ -142,11 +164,17 @@ export default function Footer() {
 
       <div className="relative border-t border-white/10">
         <Container className="flex flex-col items-center justify-between gap-3 py-6 text-xs text-navy-200 sm:flex-row">
+          <p>{company?.copyright ?? `© ${year} ${name}. All rights reserved.`}</p>
           <p>
-            &copy; {year} {site.name}. All rights reserved.
-          </p>
-          <p>
-            MSME Regd. <span className="font-mono text-tech-400">{site.msme}</span>
+            {company?.udyam ? (
+              <>
+                UDYAM Regd. <span className="font-mono text-tech-400">{company.udyam}</span>
+              </>
+            ) : (
+              <>
+                MSME Regd. <span className="font-mono text-tech-400">{company?.msme ?? ""}</span>
+              </>
+            )}
           </p>
         </Container>
       </div>
