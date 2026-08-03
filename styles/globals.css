@@ -285,3 +285,41 @@
     transition: none !important;
   }
 }
+
+/* ---- Certificate print (A4 landscape) ---- */
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 0;
+  }
+
+  body {
+    background: #ffffff;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  #certificate-print-area,
+  #certificate-print-area * {
+    visibility: visible;
+  }
+
+  #certificate-print-area {
+    position: absolute !important;
+    top: 0;
+    left: 0;
+    width: 1123px !important;
+    height: 794px !important;
+    transform: none !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  #certificate-print-area .certificate-print-scale {
+    width: 1123px !important;
+    height: 794px !important;
+    transform: none !important;
+  }
+}

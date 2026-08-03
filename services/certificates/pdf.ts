@@ -3,17 +3,20 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { PDFDocument, StandardFonts, rgb, degrees, type Color, type PDFFont, type PDFPage, type PDFImage } from "pdf-lib";
 import { generateQrPngBuffer, buildVerificationUrl, type CertificateQrPayload } from "@/services/certificates/qr";
+import { CERTIFICATE_LOCATION } from "@/components/certificates/preview-types";
 
-// A4 at 300 DPI
-export const PAGE_WIDTH = 2480;
-export const PAGE_HEIGHT = 3508;
-const SCALE = 841.89 / PAGE_HEIGHT; // ~0.24 → A4 in PDF points
+// A4 Landscape in PDF points
+const PAGE_WIDTH = 841.89;
+const PAGE_HEIGHT = 595.28;
 
-const NAVY = rgb(0.043, 0.153, 0.29);
-const GOLD = rgb(0.72, 0.53, 0.12);
-const DARK = rgb(0.13, 0.17, 0.22);
-const MUTED = rgb(0.42, 0.46, 0.52);
-const SOFT_GOLD = rgb(0.86, 0.78, 0.55);
+const NAVY = rgb(0.043, 0.173, 0.388); // #0B2C63
+const GREEN = rgb(0.078, 0.722, 0.416); // #14B86A
+const CREAM = rgb(0.988, 0.988, 0.976); // #FCFCF9
+const LIGHT_GRAY = rgb(0.965, 0.973, 0.984); // #F6F8FB
+const BORDER = rgb(0.867, 0.898, 0.937); // #DDE5EF
+const DARK = rgb(0.122, 0.161, 0.216); // #1F2937
+const MUTED = rgb(0.392, 0.455, 0.557); // #64748B
+const FAINT = rgb(0.91, 0.93, 0.96); // subtle circuit decoration
 
 export interface CertificatePdfData {
   certificateNo: string;
@@ -169,10 +172,124 @@ function drawCenteredText(
   return width;
 }
 
-function drawGoldDivider(page: PDFPage, centerX: number, y: number, halfWidth: number) {
-  page.drawLine({ start: { x: centerX - halfWidth, y }, end: { x: centerX - 18, y }, thickness: SCALE * 3, color: GOLD });
-  page.drawLine({ start: { x: centerX + 18, y }, end: { x: centerX + halfWidth, y }, thickness: SCALE * 3, color: GOLD });
-  page.drawRectangle({ x: centerX - 9 * SCALE, y: y - 7 * SCALE, width: 18 * SCALE, height: 18 * SCALE, color: GOLD, rotate: degrees(45) });
+function spacedWidth(font: PDFFont, text: string, size: number, letterSpacing: number): number {
+  let width = 0;
+  for (const char of text) {
+    width += font.widthOfTextAtSize(char, size);
+  }
+  return width + letterSpacing * Math.max(0, text.length - 1);
+}
+
+function drawCenteredTextSpaced(
+  page: PDFPage,
+  font: PDFFont,
+  text: string,
+  size: number,
+  centerX: number,
+  y: number,
+  letterSpacing: number,
+  options: { color?: Color } = {}
+) {
+  const width = spacedWidth(font, text, size, letterSpacing);
+  let cursor = centerX - width / 2;
+  for (const char of text) {
+    page.drawText(char, { x: cursor, y, size, font, color: options.color ?? DARK });
+    cursor += font.widthOfTextAtSize(char, size) + letterSpacing;
+  }
+  return width;
+}
+
+function drawRightTextSpaced(
+  page: PDFPage,
+  font: PDFFont,
+  text: string,
+  size: number,
+  rightX: number,
+  y: number,
+  letterSpacing: number,
+  options: { color?: Color } = {}
+) {
+  const width = spacedWidth(font, text, size, letterSpacing);
+  let cursor = rightX - width;
+  for (const char of text) {
+    page.drawText(char, { x: cursor, y, size, font, color: options.color ?? DARK });
+    cursor += font.widthOfTextAtSize(char, size) + letterSpacing;
+  }
+  return width;
+}
+
+function drawLeftTextSpaced(
+  page: PDFPage,
+  font: PDFFont,
+  text: string,
+  size: number,
+  x: number,
+  y: number,
+  letterSpacing: number,
+  options: { color?: Color } = {}
+) {
+  let cursor = x;
+  for (const char of text) {
+    page.drawText(char, { x: cursor, y, size, font, color: options.color ?? DARK });
+    cursor += font.widthOfTextAtSize(char, size) + letterSpacing;
+  }
+  return cursor - letterSpacing;
+}
+
+function drawWrappedCentered(
+  page: PDFPage,
+  font: PDFFont,
+  text: string,
+  size: number,
+  centerX: number,
+  y: number,
+  maxWidth: number,
+  options: { color?: Color; lineHeight?: number } = {}
+): number {
+  const lines = wrapText(font, text, size, maxWidth);
+  const lineHeight = options.lineHeight ?? size * 1.4;
+  let cursor = y;
+  for (const line of lines) {
+    drawCenteredText(page, font, line, size, centerX, cursor, { color: options.color });
+    cursor -= lineHeight;
+  }
+  return cursor;
+}
+
+function drawRightText(
+  page: PDFPage,
+  font: PDFFont,
+  text: string,
+  size: number,
+  rightX: number,
+  y: number,
+  options: { color?: Color } = {}
+) {
+  const width = font.widthOfTextAtSize(text, size);
+  page.drawText(text, {
+    x: rightX - width,
+    y,
+    size,
+    font,
+    color: options.color ?? DARK,
+  });
+  return width;
+}
+
+function drawAccentDivider(page: PDFPage, centerX: number, y: number, halfWidth: number) {
+  page.drawLine({ start: { x: centerX - halfWidth, y }, end: { x: centerX - 9, y }, thickness: 1.4, color: NAVY });
+  page.drawLine({ start: { x: centerX + 9, y }, end: { x: centerX + halfWidth, y }, thickness: 1.4, color: NAVY });
+  page.drawRectangle({ x: centerX - 4, y: y - 4, width: 8, height: 8, color: GREEN, rotate: degrees(45) });
+}
+
+function drawCornerCircuit(page: PDFPage, x: number, y: number) {
+  page.drawLine({ start: { x, y }, end: { x: x + 46, y }, thickness: 1, color: FAINT });
+  page.drawLine({ start: { x: x + 46, y }, end: { x: x + 46, y: y + 26 }, thickness: 1, color: FAINT });
+  page.drawLine({ start: { x: x + 46, y: y + 26 }, end: { x: x + 72, y: y + 26 }, thickness: 1, color: FAINT });
+  page.drawEllipse({ x: x + 80, y: y + 30, xScale: 2.4, yScale: 2.4, color: FAINT });
+  page.drawLine({ start: { x: x + 96, y: y + 64 }, end: { x: x + 66, y: y + 64 }, thickness: 1, color: FAINT });
+  page.drawLine({ start: { x: x + 66, y: y + 64 }, end: { x: x + 66, y: y + 40 }, thickness: 1, color: FAINT });
+  page.drawRectangle({ x: x + 54, y: y + 50, width: 8, height: 8, color: FAINT });
 }
 
 export async function buildCertificatePdfData(input: BuildPdfInput): Promise<CertificatePdfData> {
@@ -217,126 +334,185 @@ export async function buildCertificatePdf(data: CertificatePdfData): Promise<Uin
   doc.setCreator("Fly Aerotech Solutions");
   doc.setProducer("Fly Aerotech Solutions Certificate Engine");
 
-  const page = doc.addPage([PAGE_WIDTH * SCALE, PAGE_HEIGHT * SCALE]);
-  const times = await doc.embedFont(StandardFonts.TimesRoman);
-  const timesBold = await doc.embedFont(StandardFonts.TimesRomanBold);
-  const timesItalic = await doc.embedFont(StandardFonts.TimesRomanItalic);
+  const page = doc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
+  const W = PAGE_WIDTH;
+  const H = PAGE_HEIGHT;
   const helvetica = await doc.embedFont(StandardFonts.Helvetica);
+  const helveticaBold = await doc.embedFont(StandardFonts.HelveticaBold);
+  const helveticaOblique = await doc.embedFont(StandardFonts.HelveticaOblique);
 
-  const P = (value: number) => value * SCALE;
-  const W = P(PAGE_WIDTH);
-  const H = P(PAGE_HEIGHT);
+  const outerMargin = 22;
+  const innerMargin = 34;
 
-  // ---- Outer double border ----
-  const outerMargin = 64 * SCALE;
-  const innerMargin = 96 * SCALE;
-  const borderWidth = 3.5 * SCALE;
-  page.drawRectangle({ x: outerMargin, y: outerMargin, width: W - outerMargin * 2, height: H - outerMargin * 2, borderColor: NAVY, borderWidth });
-  page.drawRectangle({ x: innerMargin, y: innerMargin, width: W - innerMargin * 2, height: H - innerMargin * 2, borderColor: GOLD, borderWidth: 1.8 * SCALE });
-  page.drawRectangle({ x: innerMargin + 14 * SCALE, y: innerMargin + 14 * SCALE, width: W - (innerMargin + 14 * SCALE) * 2, height: H - (innerMargin + 14 * SCALE) * 2, borderColor: SOFT_GOLD, borderWidth: 1 * SCALE });
+  // ---- Premium paper background (very light off-white) ----
+  page.drawRectangle({ x: 0, y: 0, width: W, height: H, color: CREAM });
 
-  const contentTop = H - P(300);
+  // ---- Double border ----
+  page.drawRectangle({
+    x: outerMargin,
+    y: outerMargin,
+    width: W - outerMargin * 2,
+    height: H - outerMargin * 2,
+    borderColor: NAVY,
+    borderWidth: 2.5,
+  });
+  page.drawRectangle({
+    x: innerMargin,
+    y: innerMargin,
+    width: W - innerMargin * 2,
+    height: H - innerMargin * 2,
+    borderColor: GREEN,
+    borderWidth: 1,
+  });
+
+  // ---- Geometric corner accents (green diamonds at inner corners) ----
+  const corner = 8;
+  page.drawRectangle({ x: innerMargin - 4, y: innerMargin - 4, width: corner, height: corner, color: GREEN, rotate: degrees(45) });
+  page.drawRectangle({ x: W - innerMargin - 4 - corner, y: innerMargin - 4, width: corner, height: corner, color: GREEN, rotate: degrees(45) });
+  page.drawRectangle({ x: innerMargin - 4, y: H - innerMargin - 4 - corner, width: corner, height: corner, color: GREEN, rotate: degrees(45) });
+  page.drawRectangle({ x: W - innerMargin - 4 - corner, y: H - innerMargin - 4 - corner, width: corner, height: corner, color: GREEN, rotate: degrees(45) });
+
+  // ---- Subtle circuit decorations (very light) ----
+  drawCornerCircuit(page, 56, 56);
+  drawCornerCircuit(page, W - 172, H - 130);
+  drawCornerCircuit(page, 120, H - 96);
+
   const centerX = W / 2;
 
-  // ---- Top left / top right numbers ----
-  page.drawText(`Ref. No: ${data.referenceNo}`, { x: P(170), y: H - P(190), size: P(26), font: helvetica, color: MUTED });
-  page.drawText(`Certificate No: ${data.certificateNo}`, { x: P(170), y: H - P(240), size: P(26), font: helvetica, color: MUTED });
-
-  const certNoWidth = helvetica.widthOfTextAtSize(`Certificate No: ${data.certificateNo}`, P(26));
-  page.drawText(`Certificate No: ${data.certificateNo}`, { x: W - P(170) - certNoWidth, y: H - P(190), size: P(26), font: helvetica, color: MUTED });
-  const refNoWidth = helvetica.widthOfTextAtSize(`Ref. No: ${data.referenceNo}`, P(26));
-  page.drawText(`Ref. No: ${data.referenceNo}`, { x: W - P(170) - refNoWidth, y: H - P(240), size: P(26), font: helvetica, color: MUTED });
-
-  // ---- Logo ----
-  let logoY = contentTop - P(120);
+  // ---- Header: logo (left) ----
   const logo = await embedImage(doc, data.logo);
   if (logo) {
-    const logoSize = P(300);
-    const logoBox = logo.scaleToFit(logoSize, logoSize);
-    const logoX = centerX - logoBox.width / 2;
-    logoY = logoBox.height > 0 ? H - P(470) - logoBox.height : logoY;
+    const logoBox = logo.scaleToFit(76, 76);
+    const logoX = 52;
+    const logoY = H - 50 - logoBox.height;
+    page.drawRectangle({
+      x: logoX - 10,
+      y: logoY - 10,
+      width: logoBox.width + 20,
+      height: logoBox.height + 20,
+      borderColor: BORDER,
+      borderWidth: 1,
+      color: LIGHT_GRAY,
+    });
     page.drawImage(logo, { x: logoX, y: logoY, width: logoBox.width, height: logoBox.height });
   }
 
-  // ---- Company name ----
-  const companyNameSize = P(64);
-  let y = logoY - P(110);
-  const companyNameLines = wrapText(timesBold, data.company.name, companyNameSize, W - P(700));
-  for (const line of companyNameLines) {
-    drawCenteredText(page, timesBold, line, companyNameSize, centerX, y, { color: NAVY });
-    y -= P(74);
+  // ---- Header: company name + subtitle (center) ----
+  drawCenteredTextSpaced(page, helveticaBold, data.company.name.toUpperCase(), 24, centerX, H - 66, 2.2, {
+    color: NAVY,
+  });
+  drawCenteredTextSpaced(page, helveticaBold, "SOFTWARE DEVELOPMENT", 8, centerX, H - 90, 4, {
+    color: GREEN,
+  });
+
+  // ---- Header: company info (right) ----
+  const rightX = W - 52;
+  const address = CERTIFICATE_LOCATION;
+  const website = data.company.website.replace(/^https?:\/\//, "").replace(/\/$/, "");
+  const infoLines = [address, website, data.company.email, data.company.msmeNumber ? `MSME: ${data.company.msmeNumber}` : ""].filter(Boolean);
+  let infoY = H - 50;
+  for (const line of infoLines) {
+    const width = drawRightText(page, helvetica, line, 8.5, rightX, infoY, { color: DARK });
+    page.drawEllipse({ x: rightX - width - 7, y: infoY + 3, xScale: 1.7, yScale: 1.7, color: GREEN });
+    infoY -= 13.5;
   }
 
-  // ---- Tagline ----
-  if (data.company.tagline) {
-    const taglineLines = wrapText(timesItalic, data.company.tagline, P(34), W - P(900));
-    for (const line of taglineLines) {
-      drawCenteredText(page, timesItalic, line, P(34), centerX, y, { color: MUTED });
-      y -= P(44);
-    }
-  }
+  // ---- Header divider ----
+  drawAccentDivider(page, centerX, H - 142, 120);
 
-  y -= P(90);
-  drawGoldDivider(page, centerX, y, P(430));
-  y -= P(160);
+  // ---- Metadata: reference (left) + date (right) ----
+  drawLeftTextSpaced(page, helveticaBold, "CERTIFICATE REF. NO.", 6.5, 52, H - 162, 1.6, { color: NAVY });
+  page.drawText(data.referenceNo || "FAS/2026/EXP-000000", { x: 52, y: H - 176, size: 9.5, font: helveticaBold, color: DARK });
+  drawRightTextSpaced(page, helveticaBold, "DATE OF ISSUE", 6.5, rightX, H - 162, 1.6, { color: NAVY });
+  const dateValueWidth = helveticaBold.widthOfTextAtSize(data.issueDate || "—", 9.5);
+  page.drawText(data.issueDate || "—", { x: rightX - dateValueWidth, y: H - 176, size: 9.5, font: helveticaBold, color: DARK });
 
   // ---- Title ----
-  const titleSize = P(96);
-  const title = data.type === "training" ? "CERTIFICATE OF COMPLETION" : `CERTIFICATE OF ${data.type.toUpperCase()}`;
-  drawCenteredText(page, timesBold, title, titleSize, centerX, y, { color: NAVY });
-  y -= P(60);
-  drawCenteredText(page, timesItalic, "— " + data.type + " —", P(30), centerX, y, { color: GOLD });
-  y -= P(150);
+  const title = `CERTIFICATE OF ${data.type.toUpperCase()} COMPLETION`;
+  drawCenteredTextSpaced(page, helveticaBold, title, 26, centerX, H - 214, 1.4, { color: NAVY });
+  drawCenteredTextSpaced(page, helveticaBold, "TO WHOMSOEVER IT MAY CONCERN", 7, centerX, H - 232, 3.4, {
+    color: MUTED,
+  });
 
-  // ---- Intro line ----
-  drawCenteredText(page, timesItalic, "This is to certify that", P(40), centerX, y, { color: DARK });
-  y -= P(130);
-
-  // ---- Student name ----
-  const nameSize = P(150);
-  const nameText = data.studentName.toUpperCase();
-  const nameWidth = timesBold.widthOfTextAtSize(nameText, nameSize);
-  let nameY = y;
-  if (nameWidth > W - P(560)) {
-    const wrapped = wrapText(timesBold, data.studentName, P(120), W - P(560));
-    nameY = y - (wrapped.length - 1) * P(130);
-    wrapped.forEach((line, index) => drawCenteredText(page, timesBold, line.toUpperCase(), P(120), centerX, y - index * P(130), { color: NAVY }));
-  } else {
-    drawCenteredText(page, timesBold, nameText, nameSize, centerX, nameY, { color: NAVY });
-  }
-  y = nameY - P(90);
-  drawGoldDivider(page, centerX, y, P(360));
-  y -= P(120);
-
-  // ---- Father name ----
+  // ---- Body ----
+  const bodyMaxWidth = W - 460;
+  let y = H - 250;
+  drawCenteredText(page, helvetica, "This is to certify that", 9.5, centerX, y, { color: DARK });
+  y -= 16;
+  drawCenteredText(page, helveticaBold, data.studentName.toUpperCase(), 22, centerX, y, { color: GREEN });
+  y -= 30;
   if (data.fatherName) {
-    drawCenteredText(page, timesItalic, `S/o ${data.fatherName}`, P(38), centerX, y, { color: DARK });
-    y -= P(110);
+    drawCenteredText(page, helveticaOblique, `S/o ${data.fatherName}`, 8.5, centerX, y, { color: MUTED });
+    y -= 14;
   }
-
-  // ---- Body copy ----
-  const bodySize = P(40);
-  const bodyMaxWidth = W - P(900);
-  const completedText = `has successfully completed the ${data.type.toLowerCase()} program in`;
-  const bodyLines: string[] = wrapText(times, completedText, bodySize, bodyMaxWidth);
-  bodyLines.push(data.courseTitle);
+  y = drawWrappedCentered(
+    page,
+    helvetica,
+    `has successfully completed the professional ${data.type.toLowerCase()} program in`,
+    9.5,
+    centerX,
+    y,
+    bodyMaxWidth,
+    { color: DARK }
+  );
+  y -= 4;
+  y = drawWrappedCentered(page, helveticaBold, data.courseTitle, 13.5, centerX, y, bodyMaxWidth, {
+    color: GREEN,
+  });
+  y -= 4;
   if (data.technology) {
-    bodyLines.push(`with specialization in ${data.technology}`);
+    y = drawWrappedCentered(
+      page,
+      helvetica,
+      `with specialization in ${data.technology}`,
+      9.5,
+      centerX,
+      y,
+      bodyMaxWidth,
+      { color: DARK }
+    );
+    y -= 4;
   }
-  bodyLines.push(`during the period ${data.startDate} to ${data.endDate},`);
-  bodyLines.push(`spanning a duration of ${data.duration}.`);
+  y = drawWrappedCentered(
+    page,
+    helvetica,
+    `during the period ${data.startDate} to ${data.endDate}, spanning a duration of ${data.duration}.`,
+    9.5,
+    centerX,
+    y,
+    bodyMaxWidth,
+    { color: DARK }
+  );
+  y -= 6;
+  y = drawWrappedCentered(
+    page,
+    helvetica,
+    `During the program, ${data.studentName || "the candidate"} demonstrated commendable dedication, technical aptitude and professional conduct.`,
+    8.5,
+    centerX,
+    y,
+    bodyMaxWidth,
+    { color: MUTED }
+  );
+  y = drawWrappedCentered(
+    page,
+    helvetica,
+    "We congratulate them on this achievement and wish them continued success.",
+    8.5,
+    centerX,
+    y,
+    bodyMaxWidth,
+    { color: MUTED }
+  );
 
-  for (const line of bodyLines) {
-    drawCenteredText(page, times, line, bodySize, centerX, y, { color: DARK });
-    y -= P(60);
-  }
+  // ---- Bottom: QR (left) / official stamp (center) / signature (right) ----
+  const labelY = 64;
+  const imgBottom = 84;
 
-  // ---- Bottom signatures row ----
-  const bottomY = P(560);
-  const left = P(560);
-  const right = W - P(560);
-
-  // QR block (left)
+  // QR (left)
+  const qrSize = 70;
+  const qrLeft = 52;
+  const qrCenterX = qrLeft + qrSize / 2;
   let qr = null;
   if (data.qrImageUrl && data.qrImageUrl !== "/certificate/qr-placeholder.svg") {
     qr = await embedImage(doc, data.qrImageUrl);
@@ -346,45 +522,52 @@ export async function buildCertificatePdf(data: CertificatePdfData): Promise<Uin
     qr = await doc.embedPng(qrBuffer);
   }
   if (qr) {
-    const qrSize = P(230);
-    page.drawRectangle({ x: left - P(24), y: bottomY - P(24), width: qrSize + P(48), height: qrSize + P(48), borderColor: SOFT_GOLD, borderWidth: 1 * SCALE });
-    page.drawImage(qr, { x: left, y: bottomY, width: qrSize, height: qrSize });
-    drawCenteredText(page, helvetica, "Scan to verify", P(22), left + qrSize / 2, bottomY - P(48), { color: MUTED });
+    page.drawRectangle({
+      x: qrLeft - 7,
+      y: imgBottom - 7,
+      width: qrSize + 14,
+      height: qrSize + 14,
+      borderColor: BORDER,
+      borderWidth: 1,
+    });
+    page.drawImage(qr, { x: qrLeft, y: imgBottom, width: qrSize, height: qrSize });
+    drawCenteredTextSpaced(page, helveticaBold, "SCAN TO VERIFY", 6.5, qrCenterX, labelY, 2, {
+      color: NAVY,
+    });
   }
 
-  // Signature (center)
-  const sigCenterX = centerX;
+  // Official company stamp (center)
+  const stampImage = await embedImage(doc, data.officialStamp.imageUrl ?? "/assets/stamp.png");
+  if (stampImage) {
+    const stampBox = stampImage.scaleToFit(92, 92);
+    page.drawImage(stampImage, { x: centerX - stampBox.width / 2, y: imgBottom, width: stampBox.width, height: stampBox.height });
+  }
+  drawCenteredTextSpaced(page, helveticaBold, "OFFICIAL COMPANY STAMP", 6.5, centerX, labelY, 1.6, {
+    color: MUTED,
+  });
+
+  // Signature (right)
+  const sigRight = rightX;
   if (data.authorizedSignature.imageUrl) {
     const sig = await embedImage(doc, data.authorizedSignature.imageUrl);
     if (sig) {
-      const sigBox = sig.scaleToFit(P(300), P(170));
-      page.drawImage(sig, { x: sigCenterX - sigBox.width / 2, y: bottomY + P(120) - sigBox.height, width: sigBox.width, height: sigBox.height });
+      const sigBox = sig.scaleToFit(150, 40);
+      page.drawImage(sig, { x: sigRight - sigBox.width, y: imgBottom, width: sigBox.width, height: sigBox.height });
     }
   }
-  if (data.authorizedSignature.name) {
-    drawCenteredText(page, timesBold, data.authorizedSignature.name, P(34), sigCenterX, bottomY + P(40), { color: NAVY });
-    drawCenteredText(page, timesItalic, data.authorizedSignature.title || "Authorized Signatory", P(26), sigCenterX, bottomY, { color: MUTED });
-  } else {
-    drawCenteredText(page, timesItalic, "Authorized Signatory", P(26), sigCenterX, bottomY + P(20), { color: MUTED });
-  }
-
-  // Stamp (right)
-  if (data.officialStamp.enabled && data.officialStamp.imageUrl) {
-    const stamp = await embedImage(doc, data.officialStamp.imageUrl);
-    if (stamp) {
-      const stampSize = P(230);
-      const stampBox = stamp.scaleToFit(stampSize, stampSize);
-      page.drawImage(stamp, { x: right - stampBox.width, y: bottomY + P(110) - stampBox.height, width: stampBox.width, height: stampBox.height });
-    }
-  }
+  drawRightTextSpaced(page, helveticaBold, "AUTHORIZED SIGNATORY", 6.5, sigRight, labelY, 1.6, {
+    color: NAVY,
+  });
+  const sigNameWidth = helvetica.widthOfTextAtSize(data.company.name, 6.5);
+  page.drawText(data.company.name, { x: sigRight - sigNameWidth, y: labelY - 12, size: 6.5, font: helvetica, color: MUTED });
 
   // ---- Footer ----
-  const footerY = P(190);
-  const contact = [data.company.address, data.company.website ? `www.${data.company.website.replace(/^https?:\/\//, "")}` : "", data.company.email]
-    .filter(Boolean)
-    .join("  |  ");
-  drawCenteredText(page, helvetica, contact, P(24), centerX, footerY + P(40), { color: MUTED });
-  drawCenteredText(page, helvetica, `Issued on ${data.issueDate}  •  MSME: ${data.company.msmeNumber || "—"}`, P(24), centerX, footerY, { color: MUTED });
+  page.drawLine({ start: { x: 52, y: 46 }, end: { x: W - 52, y: 46 }, thickness: 0.8, color: BORDER });
+  const footer1 = [data.company.name.toUpperCase(), address, website].filter(Boolean).join("  •  ");
+  drawCenteredText(page, helvetica, footer1, 7, centerX, 34, { color: MUTED });
+  drawCenteredText(page, helvetica, `Certificate verification: ${buildVerificationUrl(data.referenceNo)}`, 7, centerX, 24, {
+    color: MUTED,
+  });
 
   return doc.save();
 }

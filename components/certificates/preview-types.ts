@@ -53,9 +53,11 @@ export const GENDERS = ["male", "female", "other"] as const;
 export const STUDENT_STATUSES = ["pending", "active", "completed", "dropped"] as const;
 
 export const LOGO_PLACEHOLDER = "/certificate/logo-placeholder.svg";
-export const SIGNATURE_PLACEHOLDER = "/certificate/signature-placeholder.svg";
-export const STAMP_PLACEHOLDER = "/certificate/stamp-placeholder.svg";
+export const SIGNATURE_PLACEHOLDER = "/assets/signature.png";
+export const STAMP_PLACEHOLDER = "/assets/stamp.png";
 export const QR_PLACEHOLDER = "/certificate/qr-placeholder.svg";
+
+export const CERTIFICATE_LOCATION = "Vadodara, Gujarat, India";
 
 export function formatCertificateDate(value?: string): string {
   if (!value) return "";

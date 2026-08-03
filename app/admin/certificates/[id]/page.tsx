@@ -3,12 +3,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   ArrowLeft,
-  Download,
   ExternalLink,
   Pencil,
   ShieldCheck,
 } from "lucide-react";
 import CertificatePreview from "@/components/certificates/CertificatePreview";
+import DownloadPdfButton from "@/components/certificates/DownloadPdfButton";
 import PrintButton from "@/components/certificates/PrintButton";
 import { QR_PLACEHOLDER } from "@/components/certificates/preview-types";
 import {
@@ -103,15 +103,11 @@ export default async function CertificateDetailsPage({ params }: PageProps) {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <a
-            href={`/api/certificates/${certificate.id}/pdf`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-lg bg-tech-500 px-4 py-2.5 text-sm font-semibold text-navy-950 shadow-lg shadow-tech-500/25 transition hover:bg-tech-400"
-          >
-            <Download className="size-4" />
-            Download PDF
-          </a>
+          <DownloadPdfButton
+            variant="solid"
+            fallbackUrl={`/api/certificates/${certificate.id}/pdf`}
+            fileName={`${certificate.certificateNo}.pdf`}
+          />
           <Link
             href={`/admin/certificates/${certificate.id}/edit`}
             className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-tech-500 hover:text-tech-600 dark:border-navy-700 dark:text-slate-200"

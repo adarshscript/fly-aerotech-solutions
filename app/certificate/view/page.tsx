@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Download, ShieldCheck } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 import CertificatePreview from "@/components/certificates/CertificatePreview";
+import DownloadPdfButton from "@/components/certificates/DownloadPdfButton";
 import PrintButton from "@/components/certificates/PrintButton";
 import DataError from "@/components/ui/DataError";
 import {
@@ -86,7 +87,7 @@ export default async function CertificateViewPage({ searchParams }: ViewPageProp
   return (
     <section className="section-padding">
       <div className="container-site">
-        <div className="mx-auto max-w-3xl">
+        <div className="mx-auto max-w-4xl">
           <div className="mb-6 text-center">
             <h1 className="text-2xl font-bold text-navy-900 sm:text-3xl dark:text-white">
               {certificate.studentName}&apos;s Certificate
@@ -102,13 +103,13 @@ export default async function CertificateViewPage({ searchParams }: ViewPageProp
           </div>
 
           <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row print:hidden">
-            <a
-              href={`/api/certificates/public/pdf?ref=${encodeURIComponent(certificate.referenceNo)}`}
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-tech-500 px-6 py-3 text-sm font-semibold text-navy-950 shadow-lg shadow-tech-500/25 transition hover:bg-tech-400"
-            >
-              <Download className="size-4" />
-              Download PDF (300 DPI)
-            </a>
+            <DownloadPdfButton
+              fileName={`${certificate.certificateNo || "Certificate"}.pdf`}
+              fallbackUrl={`/api/certificates/public/pdf?ref=${encodeURIComponent(certificate.referenceNo)}`}
+              label="Download PDF (300 DPI)"
+              variant="solid"
+              className="px-6 py-3"
+            />
             <PrintButton />
           </div>
 

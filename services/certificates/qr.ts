@@ -16,10 +16,7 @@ export interface CertificateQrPayload {
 }
 
 export function buildVerificationUrl(referenceNo: string): string {
-  const base =
-    process.env.NEXT_PUBLIC_SITE_URL ??
-    process.env.NEXTAUTH_URL ??
-    "https://flyaerotechsolutions.com";
+  const base = process.env.NEXT_PUBLIC_SITE_URL ?? "https://fly-aerotech-solutions.vercel.app";
   return `${base.replace(/\/$/, "")}/certificate-verify?ref=${encodeURIComponent(referenceNo)}`;
 }
 

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Clock, Download, Eye, SearchX, ShieldAlert, ShieldCheck } from "lucide-react";
+import { Clock, Eye, SearchX, ShieldAlert, ShieldCheck } from "lucide-react";
 import VerifyForm from "@/components/certificates/VerifyForm";
+import VerifyDownloadButton from "@/components/certificates/VerifyDownloadButton";
 import PrintButton from "@/components/certificates/PrintButton";
 import DataError from "@/components/ui/DataError";
 import { verifyCertificateByReference } from "@/services/certificate.service";
@@ -204,13 +205,11 @@ function ResultCard(props: ResultCardProps) {
               <Eye className="size-4" />
               View Certificate
             </Link>
-            <a
-              href={`/api/certificates/public/pdf?ref=${encodeURIComponent(props.referenceNo)}`}
-              className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-tech-500 hover:text-tech-600 dark:border-navy-700 dark:text-slate-200 dark:hover:text-tech-400"
-            >
-              <Download className="size-4" />
-              Download PDF
-            </a>
+            <VerifyDownloadButton
+              referenceNo={props.referenceNo}
+              certificateNo={props.certificateNo}
+              className="flex-1"
+            />
             <PrintButton className="flex-1" />
           </div>
         ) : null}
