@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Download, ShieldCheck } from "lucide-react";
 import CertificatePreview from "@/components/certificates/CertificatePreview";
 import PrintButton from "@/components/certificates/PrintButton";
+import DataError from "@/components/ui/DataError";
 import {
   buildCertificatePreviewData,
   formatCertificateDate,
@@ -27,9 +28,36 @@ export default async function CertificateViewPage({ searchParams }: ViewPageProp
   const { ref } = await searchParams;
   const reference = ref?.trim() ?? "";
 
-  const [certificate, company] = reference
-    ? await Promise.all([getPublicCertificateView(reference), getCertificateCompanyView()])
-    : [null, null];
+  let certificate: Awaited<ReturnType<typeof getPublicCertificateView>> = null;
+  let company: Awaited<ReturnType<typeof getCertificateCompanyView>> | null = null;
+  let loadError: string | null = null;
+
+  if (reference) {
+    try {
+      [certificate, company] = await Promise.all([
+        getPublicCertificateView(reference),
+        getCertificateCompanyView(),
+      ]);
+    } catch (error) {
+      console.error("[certificate/view] Failed to load certificate:", error);
+      loadError =
+        error instanceof Error
+          ? error.message
+          : "We could not load this certificate. Please try again shortly.";
+    }
+  }
+
+  if (loadError) {
+    return (
+      <section className="section-padding">
+        <div className="container-site">
+          <div className="mx-auto max-w-xl">
+            <DataError title="Certificate Unavailable" message={loadError} />
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   if (!certificate || !company) {
     return (

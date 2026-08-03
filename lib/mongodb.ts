@@ -29,7 +29,14 @@ function getCachedConnection(uri: string, dbName: string): Promise<typeof mongoo
 export async function connectToDatabase(): Promise<typeof mongoose> {
   const uri = MONGODB_URI?.trim();
   if (!uri) {
-    throw new Error("MONGODB_URI is not defined. Add it to .env.local");
+    console.error(
+      "[mongodb] MONGODB_URI is not defined. " +
+        "Local: add it to .env.local. Vercel: add it under Project Settings > Environment Variables " +
+        "(make sure it exists for the Production environment, not only Preview/Development)."
+    );
+    throw new Error(
+      "MONGODB_URI is not defined. On Vercel, add MONGODB_URI and DB_NAME to Project Settings > Environment Variables (Production environment)."
+    );
   }
   const dbName = DB_NAME?.trim() || "fly_aerotech";
 

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { AlertTriangle, CheckCircle2, Download, ShieldCheck } from "lucide-react";
 import CopyValueButton from "@/components/ui/CopyValueButton";
+import DataError from "@/components/ui/DataError";
 import { getRegistrationByReference } from "@/services/registration.service";
 
 export const metadata: Metadata = {
@@ -18,9 +19,33 @@ interface SuccessPageProps {
 export default async function RegistrationSuccessPage({ searchParams }: SuccessPageProps) {
   const { ref } = await searchParams;
   const reference = ref?.trim() ?? "";
-  const registration = reference
-    ? await getRegistrationByReference(reference)
-    : null;
+
+  let registration: Awaited<ReturnType<typeof getRegistrationByReference>> = null;
+  let loadError: string | null = null;
+
+  if (reference) {
+    try {
+      registration = await getRegistrationByReference(reference);
+    } catch (error) {
+      console.error("[student/success] Failed to load registration:", error);
+      loadError =
+        error instanceof Error
+          ? error.message
+          : "We could not load your registration details. Please try again shortly.";
+    }
+  }
+
+  if (loadError) {
+    return (
+      <section className="section-padding">
+        <div className="container-site">
+          <div className="mx-auto max-w-xl">
+            <DataError title="Registration Unavailable" message={loadError} />
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   if (!registration) {
     return (

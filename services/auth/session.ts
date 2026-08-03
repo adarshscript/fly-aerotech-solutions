@@ -18,7 +18,13 @@ export interface SessionPayload {
 function getSecret(): Uint8Array {
   const secret = process.env.AUTH_SECRET ?? process.env.JWT_SECRET;
   if (!secret) {
-    throw new Error("AUTH_SECRET is not defined. Add it to .env.local");
+    console.error(
+      "[auth] AUTH_SECRET is not defined. " +
+        "On Vercel, add AUTH_SECRET to Project Settings > Environment Variables (Production environment)."
+    );
+    throw new Error(
+      "AUTH_SECRET is not defined. On Vercel, add AUTH_SECRET to Project Settings > Environment Variables (Production environment)."
+    );
   }
   return new TextEncoder().encode(secret);
 }

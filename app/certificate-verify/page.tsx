@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Clock, Download, Eye, SearchX, ShieldAlert, ShieldCheck } from "lucide-react";
 import VerifyForm from "@/components/certificates/VerifyForm";
 import PrintButton from "@/components/certificates/PrintButton";
+import DataError from "@/components/ui/DataError";
 import { verifyCertificateByReference } from "@/services/certificate.service";
 
 export const metadata: Metadata = {
@@ -27,7 +28,21 @@ function formatDate(value: Date | null | undefined): string {
 export default async function CertificateVerifyPage({ searchParams }: VerifyPageProps) {
   const { ref } = await searchParams;
   const reference = ref?.trim() ?? "";
-  const result = reference ? await verifyCertificateByReference(reference) : null;
+
+  let result: Awaited<ReturnType<typeof verifyCertificateByReference>> | null = null;
+  let verifyError: string | null = null;
+
+  if (reference) {
+    try {
+      result = await verifyCertificateByReference(reference);
+    } catch (error) {
+      console.error("[certificate-verify] Failed to verify reference:", error);
+      verifyError =
+        error instanceof Error
+          ? error.message
+          : "Verification is temporarily unavailable. Please try again shortly.";
+    }
+  }
 
   return (
     <section className="section-padding">
@@ -58,6 +73,8 @@ export default async function CertificateVerifyPage({ searchParams }: VerifyPage
                 Waiting for a certificate number. Enter one above to verify its authenticity.
               </p>
             </div>
+          ) : verifyError ? (
+            <DataError title="Verification Error" message={verifyError} />
           ) : result ? (
             <ResultCard
               status={result.status}

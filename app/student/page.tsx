@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { GraduationCap, ShieldCheck } from "lucide-react";
 import StudentRegistrationForm from "@/components/student/StudentRegistrationForm";
+import DataError from "@/components/ui/DataError";
 import { listActiveCourses } from "@/services/course.service";
 import { getSettings } from "@/services/settings.service";
 
@@ -13,7 +14,31 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function StudentRegistrationPage() {
-  const [settings, courses] = await Promise.all([getSettings(), listActiveCourses()]);
+  let settings: Awaited<ReturnType<typeof getSettings>> = null;
+  let courses: Awaited<ReturnType<typeof listActiveCourses>> = [];
+  let loadError: string | null = null;
+
+  try {
+    [settings, courses] = await Promise.all([getSettings(), listActiveCourses()]);
+  } catch (error) {
+    console.error("[student] Failed to load registration data:", error);
+    loadError =
+      error instanceof Error
+        ? error.message
+        : "We could not load the registration data. Please try again shortly.";
+  }
+
+  if (loadError) {
+    return (
+      <section className="section-padding">
+        <div className="container-site">
+          <div className="mx-auto max-w-xl">
+            <DataError message={loadError} />
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   if (settings && settings.studentRegistrationEnabled === false) {
     return (
