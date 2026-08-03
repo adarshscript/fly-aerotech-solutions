@@ -423,7 +423,7 @@ export default function CompanySettingsForm({ company }: { company: ICompany | n
             ) : (
               <ul className="space-y-2">
                 {form.footer.quickLinks.map((link, index) => (
-                  <li key={index} className="flex items-center gap-2">
+                  <li key={index} className="flex flex-col gap-2 sm:flex-row sm:items-center">
                     <input
                       placeholder="Label"
                       className={inputClasses}

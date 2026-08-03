@@ -94,8 +94,8 @@ export default async function RegistrationSuccessPage({ searchParams }: SuccessP
                     <dt className="text-[11px] font-semibold tracking-wide text-slate-400 uppercase dark:text-slate-500">
                       Certificate Number
                     </dt>
-                    <dd className="mt-1 flex items-center gap-2">
-                      <span className="font-mono text-base font-bold text-navy-900 dark:text-white">
+                    <dd className="mt-1 flex min-w-0 items-center gap-2">
+                      <span className="min-w-0 font-mono text-base font-bold break-all text-navy-900 dark:text-white">
                         {certificate.certificateNo}
                       </span>
                       <CopyValueButton value={certificate.certificateNo} label="Copy" />
@@ -105,8 +105,8 @@ export default async function RegistrationSuccessPage({ searchParams }: SuccessP
                     <dt className="text-[11px] font-semibold tracking-wide text-slate-400 uppercase dark:text-slate-500">
                       Reference Number
                     </dt>
-                    <dd className="mt-1 flex items-center gap-2">
-                      <span className="font-mono text-base font-bold text-tech-600 dark:text-tech-400">
+                    <dd className="mt-1 flex min-w-0 items-center gap-2">
+                      <span className="min-w-0 font-mono text-base font-bold break-all text-tech-600 dark:text-tech-400">
                         {certificate.referenceNo}
                       </span>
                       <CopyValueButton value={certificate.referenceNo} label="Copy" />

@@ -94,7 +94,7 @@ export default function AboutPage() {
             title="What drives us every day"
             description="A clear purpose keeps every project, program and partnership focused on real outcomes."
           />
-          <div className="grid gap-6 lg:grid-cols-3">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {pillars.map((pillar, index) => (
               <Reveal key={pillar.title} delay={index * 100}>
                 <div className="h-full rounded-2xl border border-navy-100 bg-white p-8 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-navy-950/5">

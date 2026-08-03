@@ -186,7 +186,7 @@ function ResultCard(props: ResultCardProps) {
           ) : null}
         </div>
 
-        <dl className="grid grid-cols-2 gap-3 text-sm">
+        <dl className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
           <Detail label="Certificate No" value={props.certificateNo} mono />
           <Detail label="Reference No" value={props.referenceNo} mono />
           <Detail label="Duration" value={props.duration} />

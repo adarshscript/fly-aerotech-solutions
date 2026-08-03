@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" fill="none" role="img" aria-label="Fly Aerotech Solutions">
+  <defs>
+    <linearGradient id="loader-bg" x1="0" y1="0" x2="128" y2="128" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0B2E63" />
+      <stop offset="1" stop-color="#081730" />
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="28" fill="url(#loader-bg)" />
+  <g stroke="#18D39E" stroke-width="2.5" stroke-linecap="round">
+    <path d="M92 30 H76" />
+    <path d="M84 30 V44" />
+  </g>
+  <circle cx="92" cy="30" r="3.5" fill="#18D39E" />
+  <circle cx="76" cy="44" r="2.75" fill="#18D39E" />
+  <g stroke="#18D39E" stroke-width="2.5" stroke-linecap="round">
+    <path d="M36 100 H52" />
+    <path d="M44 100 V86" />
+  </g>
+  <circle cx="36" cy="100" r="3.5" fill="#18D39E" />
+  <circle cx="52" cy="86" r="2.75" fill="#18D39E" />
+  <g transform="translate(64 64) scale(4.2) translate(-12 -12)">
+    <path d="m22 2-7 20-4-9-9-4Z" fill="#ffffff" />
+    <path d="M22 2 11 13" stroke="#0B2E63" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+  </g>
+</svg>

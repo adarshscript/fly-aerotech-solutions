@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import PageTransitionLoader from "@/components/ui/PageTransitionLoader";
 import { getCompany } from "@/lib/content";
 import "@/styles/globals.css";
 
@@ -68,8 +69,9 @@ export default async function RootLayout({
   const company = await getCompanyCached();
 
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
-      <body className="flex min-h-screen flex-col bg-white text-slate-700 antialiased">
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} overflow-x-clip`}>
+      <body className="flex min-h-screen flex-col overflow-x-clip bg-white text-slate-700 antialiased">
+        <PageTransitionLoader />
         <Navbar company={company} />
         <main className="flex-1">{children}</main>
         <Footer />

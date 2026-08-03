@@ -45,7 +45,11 @@ export default function CertificatePreview({ data, className }: CertificatePrevi
   const stampSrc = data.officialStamp.imageUrl || STAMP_PLACEHOLDER;
 
   return (
-    <div ref={wrapperRef} className={cn("relative w-full", className)}>
+    <div
+      ref={wrapperRef}
+      className={cn("relative w-full", className)}
+      style={{ height: PREVIEW_HEIGHT * scale }}
+    >
       <div
         className="relative origin-top-left"
         style={{ width: PREVIEW_WIDTH, height: PREVIEW_HEIGHT, transform: `scale(${scale})` }}
