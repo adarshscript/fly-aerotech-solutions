@@ -6,10 +6,11 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 /**
- * Replace this file (or drop a new logo.png/logo.svg here) to swap the
- * loader branding without touching any code.
+ * Loader branding. Drop your own `logo.png` into `public/assets/loader/` to
+ * use it (no code changes needed). Falls back to the site logo otherwise.
  */
-export const LOADER_LOGO_PATH = "/assets/loader/logo.svg";
+export const LOADER_LOGO_PATH = "/assets/loader/logo.png";
+export const LOADER_LOGO_FALLBACK = "/logo.jpg";
 
 const INITIAL_VISIBLE_MS = 620;
 const FADE_OUT_MS = 320;
@@ -34,6 +35,7 @@ function prefersReducedMotion(): boolean {
 export default function PageTransitionLoader() {
   const pathname = usePathname();
   const [phase, setPhase] = useState<Phase>("enter");
+  const [logoSrc, setLogoSrc] = useState(LOADER_LOGO_PATH);
 
   const phaseRef = useRef<Phase>("enter");
   const timersRef = useRef<number[]>([]);
@@ -171,13 +173,16 @@ export default function PageTransitionLoader() {
         <div className="page-loader__logo">
           <span className="page-loader__ring" aria-hidden="true" />
           <Image
-            src={LOADER_LOGO_PATH}
+            src={logoSrc}
             alt=""
             width={112}
             height={112}
             priority
             unoptimized
             aria-hidden="true"
+            onError={() => {
+              if (logoSrc !== LOADER_LOGO_FALLBACK) setLogoSrc(LOADER_LOGO_FALLBACK);
+            }}
           />
         </div>
 
